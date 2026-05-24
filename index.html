@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ChatInNoise</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">real noise loop + ai voice</p>
+          <h1>ChatInNoise</h1>
+        </div>
+        <div class="status-strip" aria-live="polite">
+          <span class="status-pill" id="modelStatus">模型待机</span>
+          <span class="status-pill ambient" id="ambientStatus">背景声待启动</span>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <section class="signal-stage" aria-label="音频状态">
+          <div class="signal-copy">
+            <span class="channel-label">AI 语音通道</span>
+            <strong id="voiceState">等待输入</strong>
+          </div>
+          <div class="waveform" aria-hidden="true">
+            <span style="--h: 52%"></span>
+            <span style="--h: 78%"></span>
+            <span style="--h: 35%"></span>
+            <span style="--h: 66%"></span>
+            <span style="--h: 91%"></span>
+            <span style="--h: 42%"></span>
+            <span style="--h: 72%"></span>
+            <span style="--h: 56%"></span>
+            <span style="--h: 84%"></span>
+            <span style="--h: 47%"></span>
+            <span style="--h: 68%"></span>
+            <span style="--h: 38%"></span>
+          </div>
+          <button class="ambient-button" id="ambientButton" type="button" title="启动背景循环音">
+            <span aria-hidden="true">↻</span>
+            <span>启动声场</span>
+          </button>
+        </section>
+
+        <section class="workbench" aria-label="对话工作区">
+          <div class="conversation-panel">
+            <div class="panel-heading">
+              <h2>对话</h2>
+              <span id="replyLatency">本地预览</span>
+            </div>
+
+            <div class="message-list" id="messageList" aria-live="polite">
+              <article class="message ai">
+                <span class="message-role">AI</span>
+                <p>我会把回复转成语音播放。现在是界面预览，接入模型和 TTS API 后会播放真实生成语音。</p>
+              </article>
+            </div>
+
+            <form class="prompt-form" id="promptForm">
+              <label class="sr-only" for="promptInput">输入消息</label>
+              <textarea
+                id="promptInput"
+                rows="4"
+                placeholder="输入你想让 AI 回答的内容"
+                autocomplete="off"
+              ></textarea>
+              <div class="form-actions">
+                <button class="voice-button" id="voiceToggleButton" type="button" title="开启语音对话">
+                  <span aria-hidden="true">●</span>
+                  <span id="voiceToggleLabel">语音对话</span>
+                </button>
+                <button class="ghost-button" id="stopVoiceButton" type="button" title="停止 AI 语音">
+                  <span aria-hidden="true">■</span>
+                  <span>停止</span>
+                </button>
+                <button class="send-button" type="submit">
+                  <span>发送并播放</span>
+                  <span aria-hidden="true">▶</span>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <aside class="sound-panel" aria-label="声音控制">
+            <div class="sound-row">
+              <div>
+                <span class="channel-label">AI 音量</span>
+                <strong id="volumePercent">70%</strong>
+              </div>
+              <div class="volume-keys" aria-label="AI 音量控制">
+                <button id="volumeUp" type="button" title="提高 AI 音量" aria-label="提高 AI 音量">▲</button>
+                <button id="volumeDown" type="button" title="降低 AI 音量" aria-label="降低 AI 音量">▼</button>
+              </div>
+            </div>
+            <div class="volume-meter" aria-hidden="true">
+              <span id="volumeFill"></span>
+            </div>
+
+            <div class="sound-row compact">
+              <div>
+                <span class="channel-label">背景声</span>
+                <strong>固定</strong>
+              </div>
+              <span class="lock-indicator" title="背景声不受音量键影响">锁定</span>
+            </div>
+            <div class="ambient-track" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+
+            <div class="api-panel">
+              <h2>接口状态</h2>
+              <dl>
+                <div>
+                  <dt>Model API</dt>
+                  <dd id="modelEndpointStatus">未配置</dd>
+                </div>
+                <div>
+                  <dt>TTS API</dt>
+                  <dd id="ttsEndpointStatus">浏览器预览</dd>
+                </div>
+                <div>
+                  <dt>本地 VAD/ASR</dt>
+                  <dd id="voiceEndpointStatus">未启动</dd>
+                </div>
+                <div>
+                  <dt>背景音频</dt>
+                  <dd id="backgroundEndpointStatus">assets/background-loop.mp3</dd>
+                </div>
+              </dl>
+            </div>
+          </aside>
+        </section>
+      </main>
+    </div>
+
+    <audio id="backgroundAudio" preload="auto" loop></audio>
+    <audio id="aiAudio" preload="auto"></audio>
+    <script>
+      window.ChatInNoiseConfig = {
+        modelEndpoint: "/api/chat",
+        ttsEndpoint: "/api/tts",
+        statusEndpoint: "/api/status",
+        voiceStartEndpoint: "/api/voice/start",
+        voiceChunkEndpoint: "/api/voice/chunk",
+        voiceFlushEndpoint: "/api/voice/flush",
+        voiceResetEndpoint: "/api/voice/reset",
+        backgroundAudioSrc: "assets/background-loop.mp3",
+        backgroundVolume: 0.58,
+      };
+    </script>
+    <script src="app.js"></script>
+  </body>
+</html>
